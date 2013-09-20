@@ -4,6 +4,7 @@ from django.contrib.sites.models import Site
 
 from registration import signals
 from registration.models import RegistrationProfile
+from registration.views import ActivationResendView as BaseResendView
 from registration.views import ActivationView as BaseActivationView
 from registration.views import RegistrationView as BaseRegistrationView
 
@@ -72,10 +73,7 @@ class RegistrationView(BaseRegistrationView):
 
         """
         username, email, password = cleaned_data['username'], cleaned_data['email'], cleaned_data['password1']
-        if Site._meta.installed:
-            site = Site.objects.get_current()
-        else:
-            site = RequestSite(request)
+        site = _get_site(request)
         new_user = RegistrationProfile.objects.create_inactive_user(username, email,
                                                                     password, site)
         signals.user_registered.send(sender=self.__class__,
@@ -128,3 +126,39 @@ class ActivationView(BaseActivationView):
 
     def get_success_url(self, request, user):
         return ('registration_activation_complete', (), {})
+
+
+class ActivationResendView(BaseResendView):
+    """
+    An activation backend that implements the simplest possible workflow.
+    The user supplies their email address, and the activation view removes
+    all open requests and sends a new activation email.
+    """
+    def resend_activation(self, **cleaned_data):
+        """
+        Clear all existing activations and re-send the activation email.
+        """
+        user = cleaned_data['email']
+
+        site = _get_site(self.request)
+
+        RegistrationProfile.objects.filter(user=user).delete()
+        profile = RegistrationProfile.objects.create_profile(user)
+        profile.send_activation_email(site)
+
+    def get_success_url(self, request, user):
+        """
+        Return the name of the URL to redirect to after successful
+        user registration.
+        
+        """
+        return ('registration_complete', (), {})
+
+
+def _get_site(request):
+    if Site._meta.installed:
+        site = Site.objects.get_current()
+    else:
+        site = RequestSite(request)
+
+    return site

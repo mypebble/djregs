@@ -8,7 +8,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
 from registration import signals
-from registration.forms import RegistrationForm
+from registration.forms import ActivationResendForm, RegistrationForm
 
 
 class _RequestPassingFormView(FormView):
@@ -139,4 +139,25 @@ class ActivationView(TemplateView):
         raise NotImplementedError
 
     def get_success_url(self, request, user):
+        raise NotImplementedError
+
+
+class ActivationResendView(FormView):
+    """The user needs to resend an activation email.
+    """
+    form_class = ActivationResendForm
+    success_url = None
+    template_name = 'registration/activation_resend.html'
+
+    def form_valid(self, form):
+        """
+        Send the email address.
+        """
+        self.resend_activation(**form.cleaned_data)
+        return super(ActivationResendView, self).form_valid(form)
+
+    def resend_activation(self, **cleaned_data):
+        """
+        Implement the activation email logic here.
+        """
         raise NotImplementedError

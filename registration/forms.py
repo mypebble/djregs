@@ -10,8 +10,11 @@ you're using a custom model.
 
 
 from django.contrib.auth.models import User
+from django.contrib.sites import Site
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+
+from registration.models import RegistrationProfile
 
 
 class RegistrationForm(forms.Form):
@@ -118,3 +121,31 @@ class RegistrationFormNoFreeEmail(RegistrationForm):
         if email_domain in self.bad_domains:
             raise forms.ValidationError(_("Registration using free email addresses is prohibited. Please supply a different email address."))
         return self.cleaned_data['email']
+
+
+class ActivationResendForm(forms.Form):
+    """Form for re-sending the Activation Email.
+    """
+    email = forms.EmailField(
+        label=_('Your email address'), autofocus=True, required=True)
+
+    def clean_email(self):
+        """Checks to see if the email address exists and is an inactive user.
+        If it is, returns that user.
+        """
+        email = self.cleaned_data['email']
+
+        try:
+            user = User.objects.get(
+                email=email)
+        except User.DoesNotExist:
+            raise forms.ValidationError(_(
+                u"I'm sorry but we don't recognise this email address. Have "
+                "you signed up?"))
+
+        if user.is_active:
+            raise forms.ValidationError(_(
+                u"Your email address has already been validated. Have you "
+                u"forgotten your password?"))
+
+        return user
