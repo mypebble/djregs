@@ -52,3 +52,4 @@ collected-static
 .*.swp
 
 .idea/*
+*.sqlite3
