@@ -35,7 +35,10 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
+
+    'registration',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -47,7 +50,12 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, 'tests', 'templates'),
+)
+
 ROOT_URLCONF = 'tests.urls'
+SITE_ID = 1
 
 WSGI_APPLICATION = 'tests.wsgi.application'
 
