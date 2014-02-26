@@ -72,13 +72,18 @@ class RegistrationView(BaseRegistrationView):
         class of this backend as the sender.
 
         """
-        username, email, password = cleaned_data['username'], cleaned_data['email'], cleaned_data['password1']
+        username = cleaned_data['username']
+        email = cleaned_data['email']
+        password = cleaned_data['password1']
+
         site = _get_site(request)
-        new_user = RegistrationProfile.objects.create_inactive_user(username, email,
-                                                                    password, site)
-        signals.user_registered.send(sender=self.__class__,
-                                     user=new_user,
-                                     request=request)
+
+        new_user = RegistrationProfile.objects.create_inactive_user(
+            username=username, email=email, password=password, site=site)
+
+        signals.user_registered.send(
+            sender=self.__class__, user=new_user, request=request)
+
         return new_user
 
     def registration_allowed(self, request):

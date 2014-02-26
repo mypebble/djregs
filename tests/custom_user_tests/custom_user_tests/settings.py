@@ -1,5 +1,5 @@
 """
-Django settings for tests project.
+Django settings for custom_user_tests project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '1$z5%z6f=x^9fcbb(%(7cmii1xcn72cic3b&inx+v%ciylr3$z'
+SECRET_KEY = 's7*^j53z(6b_jc%u6gc)kywm9kc93l_ku*4!knu2!06dwiv345'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -34,14 +34,14 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.sites',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
 
     'registration',
-    'tests.backends',
-    'tests.forms',
-    'tests.models',
+
+    'custom_user_tests.core',
+    'custom_user_tests.backends',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -53,14 +53,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'tests', 'templates'),
-)
+ROOT_URLCONF = 'custom_user_tests.urls'
 
-ROOT_URLCONF = 'tests.urls'
-SITE_ID = 1
-
-WSGI_APPLICATION = 'tests.wsgi.application'
+WSGI_APPLICATION = 'custom_user_tests.wsgi.application'
 
 
 # Database
@@ -91,3 +86,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+
+AUTH_USER_MODEL = 'core.CustomUser'
+
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, 'custom_user_tests', 'templates'),
+)
+
+SITE_ID = 1

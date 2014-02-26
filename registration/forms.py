@@ -7,9 +7,7 @@ needs of custom user models, you will need to write your own forms if
 you're using a custom model.
 
 """
-
-
-from django.contrib.auth.models import User
+from django.contrib.auth import models, get_user_model
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -45,7 +43,8 @@ class RegistrationForm(forms.Form):
         in use.
 
         """
-        existing = User.objects.filter(username__iexact=self.cleaned_data['username'])
+        existing = models.User.objects.filter(
+            username__iexact=self.cleaned_data['username'])
         if existing.exists():
             raise forms.ValidationError(_("A user with that username already exists."))
         else:
@@ -88,8 +87,14 @@ class RegistrationFormUniqueEmail(RegistrationForm):
         site.
 
         """
-        if User.objects.filter(email__iexact=self.cleaned_data['email']):
-            raise forms.ValidationError(_("This email address is already in use. Please supply a different email address."))
+        email_in_use = models.User.objects.filter(
+            email__iexact=self.cleaned_data['email']).exists()
+
+        if email_in_use:
+            raise forms.ValidationError(
+                _("This email address is already in use. Please supply a "
+                "different email address."))
+
         return self.cleaned_data['email']
 
 
@@ -120,6 +125,74 @@ class RegistrationFormNoFreeEmail(RegistrationForm):
         return self.cleaned_data['email']
 
 
+class CustomRegistrationForm(forms.ModelForm):
+    """Register a user in a system that uses Django's Custom User Models.
+    As in the RegistrationForm, don't define save(), as our RegistrationViews
+    handle that stuff.
+    """
+    password1 = forms.CharField(
+        widget=forms.PasswordInput, label=_("Password"))
+    password2 = forms.CharField(
+        widget=forms.PasswordInput, label=_("Password (again)"))
+
+    class Meta:
+        model = get_user_model()
+        fields = (get_user_model().USERNAME_FIELD, )
+
+    def clean(self):
+        """Custom clean logic to make sure the password is correct and that
+        we have a unique username.
+        Anything that subclasses CustomRegistrationForm will need to call this
+        clean() method.
+        """
+        cleaned_data = self.cleaned_data
+
+        self._validate_username(cleaned_data)
+        self._validate_password(cleaned_data)
+
+        return cleaned_data
+
+    def save(self):
+        """Do not save.
+        """
+        raise NotImplementedError("This shouldn't be called")
+
+    def _validate_username(self, cleaned_data):
+        """Ensure the username is unique.
+        """
+        model = self._meta.model
+        username_field = model.USERNAME_FIELD
+
+        username = cleaned_data[username_field]
+
+        query = {
+            username_field: username,
+        }
+
+        user_exists = model.objects.filter(**query).exists()
+
+        if user_exists:
+            _msg = "A user with that {0} already exists.".format(
+                username_field)
+            self._errors[username_field] = self.error_class([_(_msg)])
+            del cleaned_data[username_field]
+
+    def _validate_password(self, cleaned_data):
+        """Ensure the password fields match.
+        """
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            self._errors['password1'] = self.error_class([
+                _('Both passwords must match')])
+            self._errors['password2'] = self.error_class([
+                _('Both passwords must match')])
+
+            del cleaned_data['password1']
+            del cleaned_data['password2']
+
+
 class ActivationResendForm(forms.Form):
     """Form for re-sending the Activation Email.
     """
@@ -133,9 +206,9 @@ class ActivationResendForm(forms.Form):
         email = self.cleaned_data['email']
 
         try:
-            user = User.objects.get(
+            user = models.User.objects.get(
                 email=email)
-        except User.DoesNotExist:
+        except models.User.DoesNotExist:
             raise forms.ValidationError(_(
                 u"I'm sorry but we don't recognise this email address. Have "
                 "you signed up?"))

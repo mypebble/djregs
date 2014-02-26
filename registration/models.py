@@ -70,21 +70,27 @@ class RegistrationManager(models.Manager):
                 return user
         return False
 
-    def create_inactive_user(self, username, email, password,
-                             site, send_email=True):
-        """
-        Create a new, inactive ``User``, generate a
+    def create_inactive_user(self, email, password, site, username=None,
+            send_email=True, **kwargs):
+        """Create a new, inactive ``User``, generate a
         ``RegistrationProfile`` and email its activation key to the
         ``User``, returning the new ``User``.
 
         By default, an activation email will be sent to the new
         user. To disable this, pass ``send_email=False``.
 
+        If you are using Django's Custom User Model, then pass the username
+        field in as part of kwargs. This method will send all kwargs into the
+        create_user call.
         """
-        new_user = User.objects.create_user(
-                                            username=username,
-                                            email= email,
-                                            password=password)
+        kwargs['email'] = email
+        kwargs['password'] = password
+
+        if username is not None:
+            kwargs['username'] = username
+
+        new_user = User.objects.create_user(**kwargs)
+
         new_user.is_active = False
         new_user.save()
 
@@ -115,7 +121,9 @@ class RegistrationManager(models.Manager):
             username = user.username
         if isinstance(username, unicode):
             username = username.encode('utf-8')
+
         activation_key = hashlib.sha1(salt+username).hexdigest()
+
         return self.create(user=user,
                            activation_key=activation_key)
 

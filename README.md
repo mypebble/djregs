@@ -8,9 +8,8 @@ users. This library provides:
 * Views/forms to manage the sign-up process
 * Email address activation
 
-djregs supports Django 1.4 and 1.5, with support for 1.6 coming as soon as
-possible. Full support for Django's custom user model is also being developed
-as part of djregs.
+djregs supports Django 1.5 and 1.6. Upon the release of 1.7, we will follow
+Django's policy for supported versions.
 
 I also intend to add more views, forms, models and other classes to provide
 the building blocks for constructing your own sign-up and activation
