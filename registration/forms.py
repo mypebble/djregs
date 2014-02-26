@@ -7,9 +7,7 @@ needs of custom user models, you will need to write your own forms if
 you're using a custom model.
 
 """
-
-
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, get_user_model
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -118,6 +116,50 @@ class RegistrationFormNoFreeEmail(RegistrationForm):
         if email_domain in self.bad_domains:
             raise forms.ValidationError(_("Registration using free email addresses is prohibited. Please supply a different email address."))
         return self.cleaned_data['email']
+
+
+class CustomRegistrationForm(forms.ModelForm):
+    """Register a user in a system that uses Django's Custom User Models.
+    As in the RegistrationForm, don't define save(), as our RegistrationViews
+    handle that stuff.
+    """
+    password1 = forms.CharField(
+        widget=forms.PasswordInput, label=_("Password"))
+    password2 = forms.CharField(
+        widget=forms.PasswordInput, label=_("Password (again)"))
+
+    class Meta:
+        model = get_user_model()
+        exclude = ('password',)
+
+    def clean(self):
+        """Ensure our username field is unique.
+        You need to call this in any subclasses.
+        """
+        cleaned_data = self.cleaned_data
+        model = self._meta.model
+        username_field = model.USERNAME_FIELD
+
+        username = cleaned_data[username_field]
+
+        query = {
+            username_field: username,
+        }
+
+        user_exists = model.objects.filter(**query).exists()
+
+        if user_exists:
+            _msg = "A user with that {0} already exists.".format(
+                username_field)
+            self._errors[username_field] = self.error_class([_(_msg)])
+            del cleaned_data[username_field]
+
+        return cleaned_data
+
+    def save(self):
+        """Do not save.
+        """
+        raise NotImplementedError("This shouldn't be called")
 
 
 class ActivationResendForm(forms.Form):
