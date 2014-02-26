@@ -1,5 +1,3 @@
-import datetime
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
@@ -121,3 +119,12 @@ class CustomBackendViewTests(TestCase):
         self.assertEqual(200, resp.status_code)
         self.assertFalse(resp.context['form'].is_valid())
         self.assertEqual(0, len(mail.outbox))
+
+    def test_registration_blank_username(self):
+        """Passing a blank username is the equivalent of passing None.
+        """
+        RegistrationProfile.objects.create_inactive_user(
+            email='test_user@example.com', password='password',
+            username='', site=Site.objects.get_current())
+
+        self.assertEqual(User.objects.count(), 1)

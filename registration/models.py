@@ -6,10 +6,13 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
+try:
+    from django.db.transaction import atomic
+except ImportError:
+    from django.db.transaction import commit_on_success as atomic
 try:
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -86,7 +89,7 @@ class RegistrationManager(models.Manager):
         kwargs['email'] = email
         kwargs['password'] = password
 
-        if username is not None:
+        if username:
             kwargs['username'] = username
 
         new_user = User.objects.create_user(**kwargs)
@@ -100,7 +103,7 @@ class RegistrationManager(models.Manager):
             registration_profile.send_activation_email(site)
 
         return new_user
-    create_inactive_user = transaction.commit_on_success(create_inactive_user)
+    create_inactive_user = atomic(create_inactive_user)
 
     def create_profile(self, user):
         """
