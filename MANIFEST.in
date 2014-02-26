@@ -6,3 +6,4 @@ include README
 include AUTHORS
 recursive-include docs *
 recursive-include registration/locale *
+recursive-exclude tests *
