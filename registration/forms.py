@@ -7,7 +7,7 @@ needs of custom user models, you will need to write your own forms if
 you're using a custom model.
 
 """
-from django.contrib.auth.models import User, get_user_model
+from django.contrib.auth import models, get_user_model
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -43,7 +43,8 @@ class RegistrationForm(forms.Form):
         in use.
 
         """
-        existing = User.objects.filter(username__iexact=self.cleaned_data['username'])
+        existing = models.User.objects.filter(
+            username__iexact=self.cleaned_data['username'])
         if existing.exists():
             raise forms.ValidationError(_("A user with that username already exists."))
         else:
@@ -86,8 +87,14 @@ class RegistrationFormUniqueEmail(RegistrationForm):
         site.
 
         """
-        if User.objects.filter(email__iexact=self.cleaned_data['email']):
-            raise forms.ValidationError(_("This email address is already in use. Please supply a different email address."))
+        email_in_use = models.User.objects.filter(
+            email__iexact=self.cleaned_data['email']).exists()
+
+        if email_in_use:
+            raise forms.ValidationError(
+                _("This email address is already in use. Please supply a "
+                "different email address."))
+
         return self.cleaned_data['email']
 
 
@@ -175,9 +182,9 @@ class ActivationResendForm(forms.Form):
         email = self.cleaned_data['email']
 
         try:
-            user = User.objects.get(
+            user = models.User.objects.get(
                 email=email)
-        except User.DoesNotExist:
+        except models.User.DoesNotExist:
             raise forms.ValidationError(_(
                 u"I'm sorry but we don't recognise this email address. Have "
                 "you signed up?"))

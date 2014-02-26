@@ -14,9 +14,9 @@ class CustomUserManager(auth.BaseUserManager):
         email = self.normalize_email(email)
 
         user = self.model(email=email)
-        user.save(using=self._db)
-
         user.set_password(password)
+
+        user.save(using=self._db)
 
         return user
 
@@ -41,7 +41,10 @@ class CustomUser(auth.PermissionsMixin, auth.AbstractBaseUser):
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
+    date_joined = models.DateTimeField(auto_now_add=True)
+
     USERNAME_FIELD = 'email'
+    objects = CustomUserManager()
 
     def get_username(self):
         """Return the email username.

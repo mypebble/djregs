@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 
 from registration import signals
 from registration.forms import CustomRegistrationForm
@@ -18,4 +18,28 @@ class RegistrationView(BaseRegistrationView):
     def register(self, request, **cleaned_data):
         """Register the user.
         """
-        username_field = self.model.USERNAME_FIELD
+        self.create_user(request, **cleaned_data)
+
+        auth_args = {
+            'username': cleaned_data[self.model.USERNAME_FIELD],
+            'password': cleaned_data['password1'],
+        }
+        new_user = authenticate(**auth_args)
+
+        login(request, new_user)
+
+        signals.user_registered.send(
+            sender=self.__class__, user=new_user, request=request)
+        return new_user
+
+    def create_user(self, request, **cleaned_data):
+        """Custom create_user method. This is meant to be overridden if you
+        want to pass extra form fields when creating a user.
+        By default, this method assumes you only need username_field and
+        password.
+        """
+        create_kwargs = {
+            self.model.USERNAME_FIELD: cleaned_data[self.model.USERNAME_FIELD],
+            'password': cleaned_data['password1'],
+        }
+        self.model.objects.create_user(**create_kwargs)

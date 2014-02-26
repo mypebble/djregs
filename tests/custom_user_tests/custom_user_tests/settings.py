@@ -87,3 +87,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'core.CustomUser'
+
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, 'custom_user_tests', 'templates'),
+)
