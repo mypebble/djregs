@@ -1,0 +1,55 @@
+/runserver.sh
+*.py[cod]
+
+# C extensions
+*.so
+
+# Custom dev
+local_settings.py
+wingdbstub.py
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Logs
+*logs/*
+*.log
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Pebble tools
+.*.un~
+venv/
+*.log
+collected-static
+.*.swp
+
+.idea/*
+*.sqlite3

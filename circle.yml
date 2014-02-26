@@ -1,0 +1,7 @@
+dependencies:
+    post:
+        - pip install -r tests/requirements.txt
+
+test:
+    override:
+        - cd tests/auth_user_tests && python manage.py test

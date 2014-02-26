@@ -26,13 +26,12 @@ for dirpath, dirnames, filenames in os.walk('registration'):
             data_files.append(os.path.join(prefix, f))
 
 
-setup(name='django-registration',
+setup(name='django-djregs',
       version=get_version().replace(' ', '-'),
       description='An extensible user-registration application for Django',
-      author='James Bennett',
-      author_email='james@b-list.org',
-      url='http://www.bitbucket.org/ubernostrum/django-registration/',
-      download_url='https://bitbucket.org/ubernostrum/django-registration/downloads/django-registration-1.0.tar.gz',
+      author='SF Software limited t/a Pebble',
+      author_email='scott.walton@mypebble.co.uk',
+      url='https://github.com/mypebble/djregs',
       package_dir={'registration': 'registration'},
       packages=packages,
       package_data={'registration': data_files},
