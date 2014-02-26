@@ -42,6 +42,7 @@ class CustomUser(auth.PermissionsMixin, auth.AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True)
+    user_emailed = models.IntegerField(default=0)
 
     USERNAME_FIELD = 'email'
     objects = CustomUserManager()
@@ -52,3 +53,9 @@ class CustomUser(auth.PermissionsMixin, auth.AbstractBaseUser):
         models.
         """
         return getattr(self, self.USERNAME_FIELD)
+
+    def email_user(self, subject, message, from_email):
+        """
+        """
+        self.user_emailed += 1
+        self.save()

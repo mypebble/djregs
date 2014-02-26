@@ -137,13 +137,29 @@ class CustomRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = get_user_model()
-        exclude = ('password',)
+        fields = (get_user_model().USERNAME_FIELD, )
 
     def clean(self):
-        """Ensure our username field is unique.
-        You need to call this in any subclasses.
+        """Custom clean logic to make sure the password is correct and that
+        we have a unique username.
+        Anything that subclasses CustomRegistrationForm will need to call this
+        clean() method.
         """
         cleaned_data = self.cleaned_data
+
+        self._validate_username(cleaned_data)
+        self._validate_password(cleaned_data)
+
+        return cleaned_data
+
+    def save(self):
+        """Do not save.
+        """
+        raise NotImplementedError("This shouldn't be called")
+
+    def _validate_username(self, cleaned_data):
+        """Ensure the username is unique.
+        """
         model = self._meta.model
         username_field = model.USERNAME_FIELD
 
@@ -161,12 +177,20 @@ class CustomRegistrationForm(forms.ModelForm):
             self._errors[username_field] = self.error_class([_(_msg)])
             del cleaned_data[username_field]
 
-        return cleaned_data
-
-    def save(self):
-        """Do not save.
+    def _validate_password(self, cleaned_data):
+        """Ensure the password fields match.
         """
-        raise NotImplementedError("This shouldn't be called")
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            self._errors['password1'] = self.error_class([
+                _('Both passwords must match')])
+            self._errors['password2'] = self.error_class([
+                _('Both passwords must match')])
+
+            del cleaned_data['password1']
+            del cleaned_data['password2']
 
 
 class ActivationResendForm(forms.Form):

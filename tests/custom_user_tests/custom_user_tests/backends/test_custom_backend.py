@@ -1,7 +1,7 @@
 import datetime
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -9,6 +9,8 @@ from django.test import TestCase
 
 from registration.forms import CustomRegistrationForm
 from registration.models import RegistrationProfile
+
+User = get_user_model()
 
 
 class CustomBackendViewTests(TestCase):
@@ -41,33 +43,6 @@ class CustomBackendViewTests(TestCase):
         """
         if self.old_activation is None:
             settings.ACCOUNT_ACTIVATION_DAYS = self.old_activation # pragma: no cover
-
-    def test_allow(self):
-        """
-        The setting ``REGISTRATION_OPEN`` appropriately controls
-        whether registration is permitted.
-
-        """
-        old_allowed = getattr(settings, 'REGISTRATION_OPEN', True)
-        settings.REGISTRATION_OPEN = True
-
-        resp = self.client.get(reverse('registration_register'))
-        self.assertEqual(200, resp.status_code)
-
-        settings.REGISTRATION_OPEN = False
-
-        # Now all attempts to hit the register view should redirect to
-        # the 'registration is closed' message.
-        resp = self.client.get(reverse('registration_register'))
-        self.assertRedirects(resp, reverse('registration_disallowed'))
-
-        resp = self.client.post(reverse('registration_register'),
-                                data={'email': 'bob@example.com',
-                                      'password1': 'secret',
-                                      'password2': 'secret'})
-        self.assertRedirects(resp, reverse('registration_disallowed'))
-
-        settings.REGISTRATION_OPEN = old_allowed
 
     def test_registration_get(self):
         """
@@ -106,7 +81,7 @@ class CustomBackendViewTests(TestCase):
         # A registration profile was created, and an activation email
         # was sent.
         self.assertEqual(RegistrationProfile.objects.count(), 1)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(new_user.user_emailed, 1)
 
     def test_registration_no_sites(self):
         """
@@ -130,7 +105,7 @@ class CustomBackendViewTests(TestCase):
         self.assertFalse(new_user.is_active)
 
         self.assertEqual(RegistrationProfile.objects.count(), 1)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(new_user.user_emailed, 1)
 
         Site._meta.installed = True
 
@@ -146,50 +121,3 @@ class CustomBackendViewTests(TestCase):
         self.assertEqual(200, resp.status_code)
         self.assertFalse(resp.context['form'].is_valid())
         self.assertEqual(0, len(mail.outbox))
-
-    def test_activation(self):
-        """
-        Activation of an account functions properly.
-
-        """
-        resp = self.client.post(reverse('registration_register'),
-                                data={'email': 'bob@example.com',
-                                      'password1': 'secret',
-                                      'password2': 'secret'})
-
-        profile = RegistrationProfile.objects.get(
-            user__email='bob@example.com')
-
-        resp = self.client.get(
-            reverse('registration_activate',
-            kwargs={'activation_key': profile.activation_key}))
-        self.assertRedirects(resp, reverse('registration_activation_complete'))
-
-    def test_activation_expired(self):
-        """
-        An expired account can't be activated.
-
-        """
-        resp = self.client.post(
-            reverse('registration_register'),
-            data={
-                'email': 'bob@example.com',
-                'password1': 'secret',
-                'password2': 'secret',
-            }
-        )
-
-        profile = RegistrationProfile.objects.get(
-            user__email='bob@example.com')
-        user = profile.user
-        user.date_joined -= datetime.timedelta(
-            days=settings.ACCOUNT_ACTIVATION_DAYS)
-        user.save()
-
-        resp = self.client.get(
-            reverse('registration_activate',
-            kwargs={'activation_key': profile.activation_key}))
-
-        self.assertEqual(200, resp.status_code)
-        self.assertTemplateUsed(resp, 'registration/activate.html')
-        self.assertFalse('activation_key' in resp.context)

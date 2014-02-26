@@ -1,7 +1,7 @@
-from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.sites.models import Site
 
-from registration import signals
+from registration import models, signals
 from registration.forms import CustomRegistrationForm
 from registration.views import RegistrationView as BaseRegistrationView
 
@@ -41,5 +41,10 @@ class RegistrationView(BaseRegistrationView):
         create_kwargs = {
             self.model.USERNAME_FIELD: cleaned_data[self.model.USERNAME_FIELD],
             'password': cleaned_data['password1'],
+            'site': Site.objects.get_current(),
         }
-        self.model.objects.create_user(**create_kwargs)
+        models.RegistrationProfile.objects.create_inactive_user(
+            **create_kwargs)
+
+    def get_success_url(self, request, user):
+        return ('registration_complete', (), {})
