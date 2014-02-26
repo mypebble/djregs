@@ -4,4 +4,4 @@ dependencies:
 
 test:
     override:
-        - cd tests && python manage.py test
+        - cd tests/auth_user_tests && python manage.py test
