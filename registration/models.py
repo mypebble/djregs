@@ -89,7 +89,7 @@ class RegistrationManager(models.Manager):
         kwargs['email'] = email
         kwargs['password'] = password
 
-        if username is not None:
+        if username:
             kwargs['username'] = username
 
         new_user = User.objects.create_user(**kwargs)
