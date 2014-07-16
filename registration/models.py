@@ -4,7 +4,7 @@ import random
 import re
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
@@ -13,11 +13,6 @@ try:
     from django.db.transaction import atomic
 except ImportError:
     from django.db.transaction import commit_on_success as atomic
-try:
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-except ImportError:
-    from django.contrib.auth.models import User
 
 try:
     from django.utils.timezone import now as datetime_now
@@ -86,6 +81,8 @@ class RegistrationManager(models.Manager):
         field in as part of kwargs. This method will send all kwargs into the
         create_user call.
         """
+        User = get_user_model() # Avoid import errors on module load
+
         kwargs['email'] = email
         kwargs['password'] = password
 
@@ -97,15 +94,12 @@ class RegistrationManager(models.Manager):
         new_user.is_active = False
         new_user.save()
 
-        registration_profile = self.create_profile(new_user)
-
-        if send_email:
-            registration_profile.send_activation_email(site)
+        self.create_profile(new_user, site, send_email)
 
         return new_user
     create_inactive_user = atomic(create_inactive_user)
 
-    def create_profile(self, user):
+    def create_profile(self, user, site=None, send_email=False):
         """
         Create a ``RegistrationProfile`` for a given
         ``User``, and return the ``RegistrationProfile``.
@@ -114,21 +108,24 @@ class RegistrationManager(models.Manager):
         SHA1 hash, generated from a combination of the ``User``'s
         username and a random salt.
 
+        We can opt to send the user an activation email directly from this
+        method. This requires a site to be passed.
         """
         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-        try:
-            # Django >= 1.5
-            username = user.get_username()
-        except AttributeError:
-            # Django < 1.5
-            username = user.username
+        username = user.get_username()
+
         if isinstance(username, unicode):
             username = username.encode('utf-8')
 
         activation_key = hashlib.sha1(salt+username).hexdigest()
 
-        return self.create(user=user,
-                           activation_key=activation_key)
+        profile = self.create(
+            user=user, activation_key=activation_key)
+
+        if send_email:
+            profile.send_activation_email(site)
+
+        return profile
 
     def delete_expired_users(self):
         """
@@ -170,6 +167,8 @@ class RegistrationManager(models.Manager):
         be deleted.
 
         """
+        User = get_user_model()
+
         for profile in self.all():
             try:
                 if profile.activation_key_expired():
@@ -198,7 +197,8 @@ class RegistrationProfile(models.Model):
     """
     ACTIVATED = u"ALREADY_ACTIVATED"
 
-    user = models.ForeignKey(User, unique=True, verbose_name=_('user'))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, unique=True, verbose_name=_('user'))
     activation_key = models.CharField(_('activation key'), max_length=40)
 
     objects = RegistrationManager()
