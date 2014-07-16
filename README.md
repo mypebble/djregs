@@ -8,16 +8,29 @@ users. This library provides:
 * Views/forms to manage the sign-up process
 * Email address activation
 
-djregs supports Django 1.5 and 1.6. Upon the release of 1.7, we will follow
-Django's policy for supported versions.
+djregs supports Django 1.5 and 1.6. Django 1.4 is not supported.
 
-I also intend to add more views, forms, models and other classes to provide
-the building blocks for constructing your own sign-up and activation
-processes.
+
+How to Use
+==========
+
+Add the `registration` package to your `INSTALLED_APPS` and set
+`AUTH_USER_MODEL` if it is not `auth.User`.
+
+```python
+INSTALLED_APPS = (
+    ...
+    'registration',
+)
+
+AUTH_USER_MODEL = 'main.MyUserProfile'
+```
+
+See the documentation for `django-registration` for more detailed usage.
 
 
 Relationship to django-registration
 ===================================
 
 This is a full fork of the django-registration app originally built by James
-Bennett.
+Bennett. This app uses the `registration` namespace, so cannot co-exist.
