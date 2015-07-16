@@ -1,6 +1,8 @@
 djregs
 ======
 
+[![Circle CI](https://circleci.com/gh/mypebble/djregs.svg?style=svg)](https://circleci.com/gh/mypebble/djregs)
+
 djregs is a Django app designed to make your life easy when signing up new
 users. This library provides:
 
