@@ -2,7 +2,6 @@ import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -117,7 +116,19 @@ class DefaultBackendViewTests(TestCase):
         be a ``RequestSite`` instance.
 
         """
-        Site._meta.installed = False
+        settings.INSTALLED_APPS = [
+            'django.contrib.admin',
+            'django.contrib.auth',
+            'django.contrib.contenttypes',
+            'django.contrib.sessions',
+            'django.contrib.messages',
+            'django.contrib.staticfiles',
+
+            'registration',
+            'tests.backends',
+            'tests.forms',
+            'tests.models',
+        ]
 
         resp = self.client.post(reverse('registration_register'),
                                 data={'username': 'bob',
@@ -136,7 +147,20 @@ class DefaultBackendViewTests(TestCase):
         self.assertEqual(RegistrationProfile.objects.count(), 1)
         self.assertEqual(len(mail.outbox), 1)
 
-        Site._meta.installed = True
+        settings.INSTALLED_APPS = [
+            'django.contrib.admin',
+            'django.contrib.auth',
+            'django.contrib.contenttypes',
+            'django.contrib.sessions',
+            'django.contrib.messages',
+            'django.contrib.sites',
+            'django.contrib.staticfiles',
+
+            'registration',
+            'tests.backends',
+            'tests.forms',
+            'tests.models',
+        ]
 
     def test_registration_failure(self):
         """

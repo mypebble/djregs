@@ -4,6 +4,11 @@
 # C extensions
 *.so
 
+# Venv
+local
+include
+pip-*
+
 # Custom dev
 local_settings.py
 wingdbstub.py

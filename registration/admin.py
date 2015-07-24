@@ -4,6 +4,7 @@ from django.contrib.sites.models import RequestSite
 from django.contrib.sites.models import Site
 from django.db.models import CharField, TextField
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 from registration.models import RegistrationProfile
 
@@ -14,9 +15,9 @@ def _get_user_search_fields():
     User = get_user_model()
 
     fieldset = [
-        f[0].name
-        for f in User._meta.get_fields_with_model()
-        if isinstance(f[0], (CharField, TextField))]
+        f.name
+        for f in User._meta.get_fields()
+        if isinstance(f, (CharField, TextField))]
     return [u'user__{}'.format(f) for f in fieldset]
 
 
@@ -46,7 +47,7 @@ class RegistrationAdmin(admin.ModelAdmin):
         activated.
 
         """
-        if Site._meta.installed:
+        if 'django.contrib.sites' in settings.INSTALLED_APPS:
             site = Site.objects.get_current()
         else:
             site = RequestSite(request)
