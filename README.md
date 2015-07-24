@@ -10,7 +10,7 @@ users. This library provides:
 * Views/forms to manage the sign-up process
 * Email address activation
 
-djregs supports Django 1.5 and 1.6. Django 1.4 is not supported.
+djregs supports Django 1.8.
 
 
 How to Use

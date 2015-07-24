@@ -45,4 +45,7 @@ class RegistrationView(BaseRegistrationView):
         return getattr(settings, 'REGISTRATION_OPEN', True)
 
     def get_success_url(self, request, user):
-        return (user.get_absolute_url(), (), {})
+        try:
+            return (user.get_absolute_url(), (), {})
+        except AttributeError:
+            return (None, None, None)

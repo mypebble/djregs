@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.sites.models import RequestSite
+from django.contrib.sites.requests import RequestSite
 from django.contrib.sites.models import Site
 
 from registration import signals
@@ -162,7 +162,7 @@ class ActivationResendView(BaseResendView):
 
 
 def _get_site(request):
-    if Site._meta.installed:
+    if 'django.contrib.sites' in settings.INSTALLED_APPS:
         site = Site.objects.get_current()
     else:
         site = RequestSite(request)

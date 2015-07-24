@@ -88,7 +88,19 @@ class CustomBackendViewTests(TestCase):
         be a ``RequestSite`` instance.
 
         """
-        Site._meta.installed = False
+        settings.INSTALLED_APPS = [
+            'django.contrib.admin',
+            'django.contrib.auth',
+            'django.contrib.contenttypes',
+            'django.contrib.sessions',
+            'django.contrib.messages',
+            'django.contrib.staticfiles',
+
+            'registration',
+
+            'custom_user_tests.core',
+            'custom_user_tests.backends',
+        ]
 
         resp = self.client.post(reverse('registration_register'),
                                 data={'email': 'bob@example.com',
@@ -105,7 +117,20 @@ class CustomBackendViewTests(TestCase):
         self.assertEqual(RegistrationProfile.objects.count(), 1)
         self.assertEqual(new_user.user_emailed, 1)
 
-        Site._meta.installed = True
+        settings.INSTALLED_APPS = [
+            'django.contrib.admin',
+            'django.contrib.auth',
+            'django.contrib.contenttypes',
+            'django.contrib.sessions',
+            'django.contrib.sites',
+            'django.contrib.messages',
+            'django.contrib.staticfiles',
+
+            'registration',
+
+            'custom_user_tests.core',
+            'custom_user_tests.backends',
+        ]
 
     def test_registration_failure(self):
         """
