@@ -197,8 +197,8 @@ class RegistrationProfile(models.Model):
     """
     ACTIVATED = u"ALREADY_ACTIVATED"
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, unique=True, verbose_name=_('user'))
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, verbose_name=_('user'))
     activation_key = models.CharField(_('activation key'), max_length=40)
 
     objects = RegistrationManager()
@@ -287,4 +287,3 @@ class RegistrationProfile(models.Model):
                                    ctx_dict)
 
         self.user.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
-
