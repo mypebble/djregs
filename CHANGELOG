@@ -2,6 +2,11 @@
 django-registration changelog
 =============================
 
+Version 1.2c1, 3 December 2015:
+-----------------------------
+
+* Django 1.9 support
+
 Version 0.8, 24 March 2012:
 ---------------------------
 
