@@ -37,7 +37,7 @@ urlpatterns = [
         TemplateView.as_view(
             template_name='registration/registration_complete.html'),
         name='registration_complete'),
-    (r'', include('registration.auth_urls')),
+    url(r'', include('registration.auth_urls')),
     url(r'^activate/complete/$',
         TemplateView.as_view(
             template_name='registration/activation_complete.html'),
