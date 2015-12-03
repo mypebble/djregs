@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from django.contrib.sites.models import RequestSite
-from django.contrib.sites.models import Site
+from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import CharField, TextField
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
@@ -47,10 +46,7 @@ class RegistrationAdmin(admin.ModelAdmin):
         activated.
 
         """
-        if 'django.contrib.sites' in settings.INSTALLED_APPS:
-            site = Site.objects.get_current()
-        else:
-            site = RequestSite(request)
+        site = get_current_site(request)
 
         for profile in queryset:
             if not profile.activation_key_expired():
