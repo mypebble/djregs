@@ -2,8 +2,13 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.core.urlresolvers import reverse
-from django.test import TestCase
+
+try:
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
+    
+from django.test import TestCase, override_settings
 
 from registration.forms import CustomRegistrationForm
 from registration.models import RegistrationProfile
@@ -42,6 +47,7 @@ class CustomBackendViewTests(TestCase):
         if self.old_activation is None:
             settings.ACCOUNT_ACTIVATION_DAYS = self.old_activation # pragma: no cover
 
+    @override_settings(ROOT_URLCONF='registration.backends.custom.urls')
     def test_registration_get(self):
         """
         HTTP ``GET`` to the registration view uses the appropriate
@@ -54,8 +60,9 @@ class CustomBackendViewTests(TestCase):
             resp, 'registration/registration_form.html')
 
         self.assertTrue(
-            isinstance(resp.context['form'], CustomRegistrationForm))
+            isinstance(resp.context_data['form'], CustomRegistrationForm))
 
+    @override_settings(ROOT_URLCONF='registration.backends.custom.urls')
     def test_registration(self):
         """
         Registration creates a new inactive account and a new profile
@@ -67,20 +74,23 @@ class CustomBackendViewTests(TestCase):
                                 data={'email': 'bob@example.com',
                                       'password1': 'secret',
                                       'password2': 'secret'})
-        self.assertRedirects(resp, reverse('registration_complete'))
+        
+        self.assertEqual(302, resp.status_code)
 
         new_user = User.objects.get(email='bob@example.com')
 
-        self.assertTrue(new_user.check_password('secret'))
-
+        self.failUnless(new_user.check_password('secret'))
+        self.assertEqual(new_user.email, 'bob@example.com')
+        
         # New user must not be active.
-        self.assertFalse(new_user.is_active)
+        self.assertFalse(new_user.is_active)              
 
         # A registration profile was created, and an activation email
         # was sent.
         self.assertEqual(RegistrationProfile.objects.count(), 1)
         self.assertEqual(new_user.user_emailed, 1)
 
+    @override_settings(ROOT_URLCONF='registration.backends.custom.urls')
     def test_registration_no_sites(self):
         """
         Registration still functions properly when
@@ -132,6 +142,7 @@ class CustomBackendViewTests(TestCase):
             'custom_user_tests.backends',
         ]
 
+    @override_settings(ROOT_URLCONF='registration.backends.custom.urls')
     def test_registration_failure(self):
         """
         Registering with invalid data fails.
@@ -145,6 +156,7 @@ class CustomBackendViewTests(TestCase):
         self.assertFalse(resp.context['form'].is_valid())
         self.assertEqual(0, len(mail.outbox))
 
+    @override_settings(ROOT_URLCONF='registration.backends.custom.urls')
     def test_registration_blank_username(self):
         """Passing a blank username is the equivalent of passing None.
         """

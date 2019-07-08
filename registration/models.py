@@ -111,11 +111,8 @@ class RegistrationManager(models.Manager):
         We can opt to send the user an activation email directly from this
         method. This requires a site to be passed.
         """
-        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-        username = user.get_username()
-
-        if isinstance(username, unicode):
-            username = username.encode('utf-8')
+        salt = str(hashlib.sha1(str(random.random()).encode('utf-8')).hexdigest()[:5]).encode('utf-8')
+        username = str(user.get_username()).encode('utf-8')
 
         activation_key = hashlib.sha1(salt+username).hexdigest()
 
@@ -198,7 +195,7 @@ class RegistrationProfile(models.Model):
     ACTIVATED = u"ALREADY_ACTIVATED"
 
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, verbose_name=_('user'))
+        settings.AUTH_USER_MODEL, verbose_name=_('user'), on_delete=models.CASCADE)
     activation_key = models.CharField(_('activation key'), max_length=40)
 
     objects = RegistrationManager()
@@ -209,6 +206,9 @@ class RegistrationProfile(models.Model):
 
     def __unicode__(self):
         return u"Registration information for %s" % self.user
+    
+    def __str__(self):
+            return u"Registration information for %s" % self.user    
 
     def activation_key_expired(self):
         """

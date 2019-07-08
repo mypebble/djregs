@@ -26,7 +26,8 @@ class RegistrationView(BaseRegistrationView):
         }
         new_user = authenticate(**auth_args)
 
-        login(request, new_user)
+        if new_user:
+            login(request, new_user)
 
         signals.user_registered.send(
             sender=self.__class__, user=new_user, request=request)

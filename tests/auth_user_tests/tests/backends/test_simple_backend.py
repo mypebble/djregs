@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+try:
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
+    
 from django.test import TestCase
 
 from registration.forms import RegistrationForm
@@ -61,19 +65,30 @@ class SimpleBackendViewTests(TestCase):
                                       'password1': 'secret',
                                       'password2': 'secret'})
 
-        new_user = User.objects.get(username='bob')
         self.assertEqual(302, resp.status_code)
-        self.failUnless(new_user.get_absolute_url() in resp['Location'])
+        self.failUnless('/registration/register/complete/' in resp['Location'])
 
+        new_user = User.objects.get(username='bob')
+        
         self.failUnless(new_user.check_password('secret'))
         self.assertEqual(new_user.email, 'bob@example.com')
+        
+        self.failIfEqual(new_user.is_active, True)
 
+        url = reverse(
+            'registration_activate', 
+            kwargs={'activation_key':new_user.registrationprofile.activation_key}
+        ) 
+        
+        resp = self.client.get(url)
+        
+        self.assertEqual(302, resp.status_code)
+
+        # Reload after activation_key is sent
+        user = User.objects.get(username='bob')
         # New user must be active.
-        self.failUnless(new_user.is_active)
-
-        # New user must be logged in.
-        resp = self.client.get(reverse('registration_register'))
-        self.failUnless(resp.context['user'].is_authenticated())
+        self.failUnless(user.is_active)
+        
 
     def test_registration_failure(self):
         """

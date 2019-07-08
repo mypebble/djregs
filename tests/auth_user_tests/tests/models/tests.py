@@ -41,7 +41,7 @@ class RegistrationModelTests(TestCase):
         self.assertEqual(RegistrationProfile.objects.count(), 1)
         self.assertEqual(profile.user.id, new_user.id)
         self.failUnless(re.match('^[a-f0-9]{40}$', profile.activation_key))
-        self.assertEqual(unicode(profile),
+        self.assertEqual(str(profile),
                          "Registration information for alice")
 
     def test_activation_email(self):
@@ -183,7 +183,7 @@ class RegistrationModelTests(TestCase):
         """
         # Due to the way activation keys are constructed during
         # registration, this will never be a valid key.
-        invalid_key = hashlib.sha1('foo').hexdigest()
+        invalid_key = hashlib.sha1('foo'.encode('utf-8')).hexdigest()
         self.failIf(RegistrationProfile.objects.activate_user(invalid_key))
 
     def test_expired_user_deletion(self):
