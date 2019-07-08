@@ -1,6 +1,8 @@
 from django.conf.urls import include, url
 
 from django.contrib import admin
+import registration.urls as registration_urls 
+
 admin.autodiscover()
 
 urlpatterns = [
@@ -9,4 +11,5 @@ urlpatterns = [
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', admin.site.urls),
+    url(r'^registration/', include(registration_urls.urlpatterns))
 ]

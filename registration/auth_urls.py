@@ -24,37 +24,35 @@ consult a specific backend's documentation for details.
 """
 
 from django.conf.urls import include
-from django.conf.urls import patterns
 from django.conf.urls import url
+from django.urls import path, re_path
 
 from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
     url(r'^login/$',
-        auth_views.login,
-        {'template_name': 'registration/login.html'},
+        auth_views.LoginView.as_view(template_name='registration/login.html'),
         name='auth_login'),
     url(r'^logout/$',
-        auth_views.logout,
-        {'template_name': 'registration/logout.html'},
+        auth_views.LogoutView.as_view(template_name='registration/logout.html'),
         name='auth_logout'),
     url(r'^password/change/$',
-        auth_views.password_change,
+        auth_views.PasswordChangeView.as_view(),
         name='auth_password_change'),
     url(r'^password/change/done/$',
-        auth_views.password_change_done,
+        auth_views.PasswordChangeDoneView.as_view(),
         name='auth_password_change_done'),
     url(r'^password/reset/$',
-        auth_views.password_reset,
+        auth_views.PasswordResetView.as_view(),
         name='auth_password_reset'),
     url(r'^password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        auth_views.password_reset_confirm,
+        auth_views.PasswordResetConfirmView.as_view(),
         name='auth_password_reset_confirm'),
     url(r'^password/reset/complete/$',
-        auth_views.password_reset_complete,
+        auth_views.PasswordResetCompleteView.as_view(),
         name='auth_password_reset_complete'),
     url(r'^password/reset/done/$',
-        auth_views.password_reset_done,
-        name='auth_password_reset_done'),
+        auth_views.PasswordResetDoneView.as_view(),
+        name='auth_password_reset_done')
 ]

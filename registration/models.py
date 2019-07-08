@@ -111,11 +111,8 @@ class RegistrationManager(models.Manager):
         We can opt to send the user an activation email directly from this
         method. This requires a site to be passed.
         """
-        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-        username = user.get_username()
-
-        if isinstance(username, unicode):
-            username = username.encode('utf-8')
+        salt = str(hashlib.sha1(str(random.random()).encode('utf-8')).hexdigest()[:5]).encode('utf-8')
+        username = str(user.get_username()).encode('utf-8')
 
         activation_key = hashlib.sha1(salt+username).hexdigest()
 
@@ -209,6 +206,9 @@ class RegistrationProfile(models.Model):
 
     def __unicode__(self):
         return u"Registration information for %s" % self.user
+    
+    def __str__(self):
+            return u"Registration information for %s" % self.user    
 
     def activation_key_expired(self):
         """

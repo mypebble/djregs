@@ -17,14 +17,15 @@ your own URL patterns for these views instead.
 """
 
 
-from django.conf.urls import patterns
 from django.conf.urls import include
+from django.urls import path, re_path
 from django.conf.urls import url
 from django.views.generic.base import TemplateView
 
 from registration.backends.default.views import ActivationView
 from registration.backends.default.views import RegistrationView
 
+app_name = 'registration'
 
 urlpatterns = [
     url(r'^activate/complete/$',
@@ -46,5 +47,5 @@ urlpatterns = [
     url(r'^register/closed/$',
         TemplateView.as_view(template_name='registration/registration_closed.html'),
         name='registration_disallowed'),
-    url(r'', include('registration.auth_urls')),
+    url(r'', include('registration.auth_urls'))
 ]

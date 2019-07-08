@@ -53,6 +53,15 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+# Added this because tests for custom_user were adding migrations
+# This forces Django to perform them ... not ideal but it works
+MIGRATION_MODULES = { 
+    'auth': None, 
+    'contenttypes': None,
+    'sessions': None,
+    'sites': None
+}
+
 ROOT_URLCONF = 'custom_user_tests.urls'
 
 WSGI_APPLICATION = 'custom_user_tests.wsgi.application'
@@ -92,5 +101,38 @@ AUTH_USER_MODEL = 'core.CustomUser'
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, 'custom_user_tests', 'templates'),
 )
+
+# Django 2.02 support settings
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'custom_user_tests', 'templates'),
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'debug': True,
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 SITE_ID = 1

@@ -3,7 +3,12 @@ import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.urlresolvers import reverse
+
+try:
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
+    
 from django.test import TestCase
 
 from registration.forms import RegistrationForm
